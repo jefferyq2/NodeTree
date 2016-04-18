@@ -22,6 +22,7 @@ public class NodeManager {
 	}
 	
 	private HashMap<String, FileNode> masterNodeList;
+	private String lastRoot;
 	
 	
 	//Takes in a set of file names, and populates the masterNodeList. Must be called before other methods
@@ -54,6 +55,7 @@ public class NodeManager {
 	//Calculates the distance between all nodes, based off of the root node 
 	public void calculateDistancesFromRoot(String rootName) throws InvalidInputException, IllegalStateException {
 		checkMasterNodeList();
+		lastRoot = rootName;
 		LinkedList<FileNode> searchQueue = new LinkedList<FileNode>();
 		FileNode rootNode = masterNodeList.get(rootName);
 		if (rootNode == null) throw new InvalidInputException("Root Node of name '" + rootName + "' not found."); 
@@ -77,6 +79,59 @@ public class NodeManager {
 		}
 		Collections.sort(returnList);
 		return returnList;
+	}
+	
+	//Outputs a String that lists out the tree structure of the shortest route to each file, along with orphaned files at the bottom  
+	public String getSummeryOfLastCalculation() throws InvalidInputException, IllegalStateException {
+		checkMasterNodeList();
+		FileNode rootNode = masterNodeList.get(lastRoot);
+		if (rootNode == null) throw new InvalidInputException("Root Node of name '" + lastRoot + "' not found.");
+		StringBuilder returnString = summeryOfNodesRelationships(rootNode).append(System.lineSeparator()).append(getOrphanedFiles());
+		return returnString.toString();
+	}
+	
+	//Return a StringBuilder Object of all nodes connected to node passed in
+	private StringBuilder summeryOfNodesRelationships(FileNode nodeToCheck) {
+		StringBuilder currentStringBuilder = new StringBuilder();
+		return summeryOfNodesRelationships(nodeToCheck, currentStringBuilder);
+	}
+	
+	//Return a StringBuilder Object of all nodes connected to node passed in, adding onto the passed into StringBuilder
+	private StringBuilder summeryOfNodesRelationships(FileNode nodeToCheck, StringBuilder currentStringBuilder) {
+		//Make a nice little tree structure for easy visualization
+		int indentLevel = nodeToCheck.getDistanceFromRoot();
+		if (indentLevel > 0) {
+			for (int i = 0; i < indentLevel; i++) {
+				currentStringBuilder.append("\t");
+			}
+			currentStringBuilder.append("|-- ");
+		}
+		currentStringBuilder.append(nodeToCheck.getName() + System.lineSeparator());
+		HashSet<FileNode> childNodes = nodeToCheck.getChildNodeList();
+		for (FileNode childNode : childNodes) {
+			summeryOfNodesRelationships(childNode,currentStringBuilder);
+		}
+		return currentStringBuilder;
+	}
+	
+	//Returns a StringBuilder Object of all orphaned files in alphabetical order
+	private StringBuilder getOrphanedFiles(){
+		ArrayList<String> listOfOrphans = new ArrayList<String>();
+		for (FileNode node : masterNodeList.values()) {
+			if (node.getDistanceFromRoot() == FileNode.DEFALUT_DISTANCE) {
+				listOfOrphans.add(node.getName());
+			}
+		}
+		if (listOfOrphans.isEmpty()) {
+			return new StringBuilder();
+		}
+		
+		Collections.sort(listOfOrphans);
+		StringBuilder currentStringBuilder = new StringBuilder("List of Orphaned Files: " + System.lineSeparator() + System.lineSeparator());
+		for (String nodeName : listOfOrphans) {
+			currentStringBuilder.append(nodeName + System.lineSeparator());
+		}
+		return currentStringBuilder;
 	}
 	
 	private void checkMasterNodeList() throws IllegalStateException {

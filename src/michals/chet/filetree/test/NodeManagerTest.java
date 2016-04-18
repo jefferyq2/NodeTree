@@ -13,12 +13,13 @@ import michals.chet.filetree.NodeManager;
 import michals.chet.filetree.NodeManager.InvalidInputException;
 
 import org.junit.Test;
+
 import static org.hamcrest.CoreMatchers.*;
 
 public class NodeManagerTest {
 
 	@Test
-	public void test() throws IllegalStateException, InvalidInputException {
+	public void testHappyPath() throws IllegalStateException, InvalidInputException {
 		NodeManager testNodeManager = new NodeManager();
 		//Initialize node list
 		testNodeManager.createNodeList(makeTestFileList());
@@ -35,6 +36,24 @@ public class NodeManagerTest {
 		//Test that list contains expected values
 		List<String> expected = Arrays.asList("file4.js");
 		assertThat(orphins, is(expected));
+	}
+	
+	@Test (expected = IllegalStateException.class) 
+	public void testIllegalStateException() throws IllegalStateException, InvalidInputException{
+		NodeManager testNodeManager = new NodeManager();
+		
+		//This should throw an exception, since createNodeList has not been called yet
+		testNodeManager.calculateDistancesFromRoot("file1.js");
+	}
+	
+	@Test
+	public void testGetSummeryOfLastCalculation() throws IllegalStateException, InvalidInputException {
+		//Set up NodeManager the same way as in happy path test
+		NodeManager testNodeManager = new NodeManager();
+		testNodeManager.createNodeList(makeTestFileList());
+		testNodeManager.setNodeRelationships(makeTestRelationships());
+		testNodeManager.calculateDistancesFromRoot("file1.js");
+		assertEquals(getExpectedCalcSummery(), testNodeManager.getSummeryOfLastCalculation());
 	}
 	
 	private Set<String> makeTestFileList() {
@@ -57,5 +76,13 @@ public class NodeManagerTest {
 		
 		return returnList;
 	}
-
+	
+	private String getExpectedCalcSummery(){
+		String returnString = "file1.js" + System.lineSeparator() + 
+				"\t|-- file2.js" + System.lineSeparator() +
+				"\t\t|-- file3.js" + System.lineSeparator() + System.lineSeparator() +
+				"List of Orphaned Files: " + System.lineSeparator() + System.lineSeparator() +
+				"file4.js" + System.lineSeparator();
+		return returnString;
+	}
 }
