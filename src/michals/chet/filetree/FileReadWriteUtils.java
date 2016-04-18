@@ -2,6 +2,8 @@ package michals.chet.filetree;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -10,7 +12,7 @@ import java.util.Scanner;
 import java.util.Set;
 import java.util.AbstractMap.SimpleEntry;
 
-public class FileReadUtils {
+public class FileReadWriteUtils {
 	
 	//Read each line of a file, and put each line into a Set of Strings
 	public static Set<String> textFileToSet(String fileLocation) throws FileNotFoundException {
@@ -44,5 +46,11 @@ public class FileReadUtils {
 	
 	public static List<String> commaStringToList(String inputString) {
 		return Arrays.asList(inputString.split("\\s*,\\s*"));
+	}
+	
+	public static void outputStringToFile(String fileLocation, String outputContents) throws FileNotFoundException, UnsupportedEncodingException {
+		PrintWriter writer = new PrintWriter(fileLocation, "UTF-8");
+		writer.append(outputContents);
+		writer.close();
 	}
 }
