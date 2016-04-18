@@ -93,13 +93,15 @@ public class NodeManager {
 	//Return a StringBuilder Object of all nodes connected to node passed in
 	private StringBuilder summeryOfNodesRelationships(FileNode nodeToCheck) {
 		StringBuilder currentStringBuilder = new StringBuilder();
-		return summeryOfNodesRelationships(nodeToCheck, currentStringBuilder);
+		HashSet<FileNode> nodesPrinted = new HashSet<FileNode>();
+		return summeryOfNodesRelationships(nodeToCheck, currentStringBuilder, 0, nodesPrinted);
 	}
 	
 	//Return a StringBuilder Object of all nodes connected to node passed in, adding onto the passed into StringBuilder
-	private StringBuilder summeryOfNodesRelationships(FileNode nodeToCheck, StringBuilder currentStringBuilder) {
+	private StringBuilder summeryOfNodesRelationships(FileNode nodeToCheck, StringBuilder currentStringBuilder, int currentLevel, HashSet<FileNode> nodesPrinted) {
 		//Make a nice little tree structure for easy visualization
 		int indentLevel = nodeToCheck.getDistanceFromRoot();
+		if (indentLevel != currentLevel || nodesPrinted.contains(nodeToCheck)) return currentStringBuilder;
 		if (indentLevel > 0) {
 			for (int i = 0; i < indentLevel; i++) {
 				currentStringBuilder.append("\t");
@@ -107,9 +109,10 @@ public class NodeManager {
 			currentStringBuilder.append("|-- ");
 		}
 		currentStringBuilder.append(nodeToCheck.getName() + System.lineSeparator());
+		nodesPrinted.add(nodeToCheck);
 		HashSet<FileNode> childNodes = nodeToCheck.getChildNodeList();
 		for (FileNode childNode : childNodes) {
-			summeryOfNodesRelationships(childNode,currentStringBuilder);
+			summeryOfNodesRelationships(childNode,currentStringBuilder, indentLevel + 1, nodesPrinted);
 		}
 		return currentStringBuilder;
 	}
